@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install --yes \
  autoconf \
  git \
  perl \
- r-base \
- python \
+# r-base \
+# python \
  libbz2-dev \
  liblzma-dev \
  apt-utils \
@@ -24,7 +24,10 @@ RUN apt-get update && apt-get install --yes \
  zlib1g-dev \
  libcurl3 \
  libcurl4-openssl-dev \
- libxml2-dev
+ libxml2-dev \
+ zip \
+ default-jre \
+ default-jdk 
 
 WORKDIR /opt/
 RUN wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
@@ -78,7 +81,15 @@ RUN tar xvzf subread-1.6.0-Linux-x86_64.tar.gz
 ENV PATH "$PATH:/opt/subread-1.6.0-Linux-x86_64/bin/"
 
 WORKDIR /opt
-RUN git clone https://github.com/lh3/seqtk.git  
-WORKDIR /opt/seqtk
-RUN make
-ENV PATH "$PATH:/opt/seqtk/"
+RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.7.zip
+RUN unzip fastqc_v0.11.7.zip
+WORKDIR FastQC
+RUN chmod 755 fastqc
+WORKDIR /opt
+RUN ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc
+
+#WORKDIR /opt
+#RUN git clone https://github.com/lh3/seqtk.git  
+#WORKDIR /opt/seqtk
+#RUN make
+#ENV PATH "$PATH:/opt/seqtk/"
