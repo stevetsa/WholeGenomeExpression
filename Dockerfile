@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install --yes \
  libxml2-dev \
  zip \
  default-jre \
- default-jdk 
+ default-jdk \
+ libssl-dev
 
 WORKDIR /opt/
 RUN wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
@@ -87,6 +88,14 @@ WORKDIR FastQC
 RUN chmod 755 fastqc
 WORKDIR /opt
 RUN ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc
+
+WORKDIR /opt
+RUN wget ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/edirect.tar.gz
+RUN tar xvzf edirect.tar.gz
+WORKDIR /opt/edirect
+RUN sh setup.sh
+RUN cpan LWP::Protocol::https
+ENV PATH "$PATH:/opt/edirect/"
 
 #WORKDIR /opt
 #RUN git clone https://github.com/lh3/seqtk.git  
