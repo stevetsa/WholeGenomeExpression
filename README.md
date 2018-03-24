@@ -59,13 +59,25 @@ We tested four different tools with <this software>. They can be found in [serve
 # Additional Functionality
 
 ### DockerFile
+A docker image containing all tools is available.
+  ```{sh}
+  #docker pull stevetsa/wholegenomeexpression-docker
+  sudo docker run -i -t stevetsa/wholegenomeexpression-docker
+  cd /home
+  git clone https://github.com/stevetsa/WholeGenomeExpression.git
+  cd WholeGenomeExpression
+  sh script.sh SRR531311 SRR531315 ./refDir 16 ./outDir > log &
+  ```
+  Current the script only generates a counts from 2 SRA accession numbers.
+  A Shiny app for visualization will be added to the Docker image in the next release.
 
-<this software> comes with a Dockerfile which can be used to build the Docker image.
+Alternatively, you can also build from the provided Dockerfile.
 
   1. `git clone https://github.com/NCBI-Hackathons/<this software>.git`
-  2. `cd server`
-  3. `docker build --rm -t <this software>/<this software> .`
-  4. `docker run -t -i <this software>/<this software>`
+  2. `docker build --rm -t <name>/<wholegenomeexpression> .`
+  3. `docker run -t -i <name>/<wholegenomeexpression>`
+  
+ 
   
 ### Website
 
@@ -75,6 +87,12 @@ There is also a Docker image for hosting the main website. This should only be u
   2. `cd Website`
   3. `docker build --rm -t <this software>/website .`
   4. `docker run -t -i <this software>/website`
+  
+  ```{sh}
+  ssh  -L 3838:localhost:3838 <user>@<AWS VM public IP>
+  ./runshiny.sh
+  ```
+  Then open browser and point to "http://0.0.0.0:3838/"
   
 =======
 # viSRAtoo
