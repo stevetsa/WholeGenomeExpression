@@ -24,28 +24,33 @@ OUTDIR=$(readlink -f "$5")
 #gunzip $REFDIR/GCF_000001405.37_GRCh38.p11_genomic.gff.gz
 
 ##mm
-# mouse reference  - default
+ mouse reference  - default
 # 
 printf "Getting Reference genome and create BLAST databases\n"
 date
 mkdir $REFDIR
-wget -P $REFDIR `esearch -db assembly -query 'Mus musculus [orgn] AND latest [SB]' | efetch -format docsum | xtract -pattern DocumentSummary -element FtpPath_RefSeq | \
+wget -P $REFDIR `esearch -db assembly -query 'Mus musculus [orgn] AND latest [SB]' | efetch -format docsum | xtract -pattern DocumentSum$
                  awk -F"/" '{print $0"/"$NF"_genomic.fna.gz"}'` 
 gunzip $REFDIR/*.fna.gz
 makeblastdb -in $REFDIR/*_genomic.fna -dbtype nucl -out $REFDIR/ref
-wget -P $REFDIR ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.26_GRCm38.p6/GCF_000001635.26_GRCm38.p6_genomic.gff.gz
+wget -P $REFDIR ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.26_GRCm38.p6/GCF_000001635.26_GRCm38.p6_genomic.gff$
 gunzip $REFDIR/GCF_000001635.26_GRCm38.p6_genomic.gff.gz
 
 mkdir $OUTDIR
 printf "Creating SAM alignment files with magicblast\n"
 date
+printf "processing %s\n" "$SRA1ID"
+date
 magicblast -sra $SRA1ID -db $REFDIR/ref -out $OUTDIR/$SRA1ID.sam -num_threads $CORES -no_unaligned
+printf "processing %s\n" "$SRA2ID"
+date
 magicblast -sra $SRA2ID -db $REFDIR/ref -out $OUTDIR/$SRA2ID.sam -num_threads $CORES -no_unaligned
+
 
 printf "Convert SAM to BAM\n"
 date
-samtools view -bS $OUTDIR/$SRA1ID.sam | samtools sort -o $OUTDIR/$SRA1ID
-samtools view -bS $OUTDIR/$SRA2ID.sam | samtools sort -o $OUTDIR/$SRA2ID
+samtools view -bS $OUTDIR/$SRA1ID.sam | samtools sort -o $OUTDIR/$SRA1ID.bam
+samtools view -bS $OUTDIR/$SRA2ID.sam | samtools sort -o $OUTDIR/$SRA2ID.bam
 #For older samtools < 1.3
 #samtools view -bS $OUTDIR/$SRA1ID.sam | samtools sort - $OUTDIR/$SRA1ID
 #samtools view -bS $OUTDIR/$SRA2ID.sam | samtools sort - $OUTDIR/$SRA2ID
@@ -53,12 +58,12 @@ samtools view -bS $OUTDIR/$SRA2ID.sam | samtools sort -o $OUTDIR/$SRA2ID
 printf "Counting\n"
 date
 ##mm
-featureCounts -t exon -g gene -a $REFDIR/GCF_000001635.26_GRCm38.p6_genomic.gff -o counts_gene1.txt $OUTDIR/$SRA1ID.bam
-featureCounts -t exon -g gene -a $REFDIR/GCF_000001635.26_GRCm38.p6_genomic.gff -o counts_gene2.txt $OUTDIR/$SRA2ID.bam
+featureCounts -t exon -g gene -a $REFDIR/GCF_000001635.26_GRCm38.p6_genomic.gff -o $OUTDIR/counts_gene1.txt $OUTDIR/$SRA1ID.bam
+featureCounts -t exon -g gene -a $REFDIR/GCF_000001635.26_GRCm38.p6_genomic.gff -o $OUTDIR/counts_gene2.txt $OUTDIR/$SRA2ID.bam
 
 ##hg
-#featureCounts -t exon -g gene -a $REFDIR/GCF_000001405.37_GRCh38.p11_genomic.gff -o counts_gene1.txt $OUTDIR/$SRA1ID.bam
-#featureCounts -t exon -g gene -a $REFDIR/GCF_000001405.37_GRCh38.p11_genomic.gff -o counts_gene2.txt $OUTDIR/$SRA2ID.bam
+#featureCounts -t exon -g gene -a $REFDIR/GCF_000001405.37_GRCh38.p11_genomic.gff -o $OUTDIR/counts_gene1.txt $OUTDIR/$SRA1ID.bam
+#featureCounts -t exon -g gene -a $REFDIR/GCF_000001405.37_GRCh38.p11_genomic.gff -o $OUTDIR/counts_gene2.txt $OUTDIR/$SRA2ID.bam
 
 printf "Done\n"
 date
